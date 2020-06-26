@@ -3,20 +3,20 @@ let mongoose = require('mongoose');
 let router = express.Router();
 let {User, Item} = require('./models');
 
-mongoose.connect('mongodb://localhost/mytodo'); 
+mongoose.connect('mongodb://localhost/mytodo', { useNewUrlParser: true,  useUnifiedTopology: true }); 
 
 router.get('/users', async (req, res) => {
   let users = await User.find();
-  res.send(users);
+  res.json(users);
 });
 
 router.get('/users/:username', async (req, res) => {
   let user = await User.findOne({ username: req.params.username });
   if (user != undefined) {
-    res.send(user);
+    res.json(user);
   } else {
     res.status = 404;
-    res.send({ "response": "User not found!" });
+    res.json({ "response": "User not found!" });
   }
 });
 
@@ -27,7 +27,7 @@ router.post('/users', async (req, res) => {
   });
 
   newUser.save();
-  res.send(newUser);
+  res.json(newUser);
 });
 
 router.patch('/users/:username', async(req, res) => {
@@ -40,21 +40,34 @@ router.patch('/users/:username', async(req, res) => {
       user.password = req.body.password;
     }
     await user.save();
-    res.send(user);
+    res.json(user);
   } catch {
     res.status(404);
-    res.send({ "response": "User not found!" });
+    res.json({ "response": "User not found!" });
   }
 });
 
 router.delete('/users/:username', async(req, res) => {
   try {
     await User.deleteOne({ username: req.params.username });
-    res.status(204).send();
+    res.status(204).json();
   } catch {
     res.status(404);
-    res.send({ "response": "User not found!" });
+    res.json({ "response": "User not found!" });
   }
 });
+
+router.get('/todo/', async (req, res) => {
+  let todos = await Item.find();
+  res.json(todos);
+});
+
+router.post('/todo/', async (req, res) => {
+    let newTodo = new Item({
+      user: req.body.user,
+      content: req.body.content,
+      done: req.body.done
+    });
+}); 
 
 module.exports = router;
